@@ -11,7 +11,7 @@ export class CdkuserpoolStack extends cdk.Stack {
   
   constructor(scope: cdk.Construct, id: string, props: Props) {
     super(scope, id, props);
-
+    
     const GOOGLE_CLIENT_ID = "<xxxx.apps.googleusercontent.com>" // replace <xxxx.apps.googleusercontent.com> with real client id.
     const GOOGLE_CLIENT_SECRET = "<xxx-xxxxxxxxx-xxxxxxxxxx>" // replace <xxx-xxxxxxxxx-xxxxxxxxxx> with real client secret.
     const ALLOWED_EMAILS = "a@example.com, b@example.com," // replace x@example.com with real emails for signup whitelist.
@@ -79,6 +79,7 @@ export class CdkuserpoolStack extends cdk.Stack {
         cognito.OAuthScope.EMAIL,
         cognito.OAuthScope.OPENID,
         cognito.OAuthScope.PROFILE,
+        cognito.OAuthScope.COGNITO_ADMIN,
       ],
     };
 
@@ -95,7 +96,7 @@ export class CdkuserpoolStack extends cdk.Stack {
         oAuth: oauth_settings,
       }
     );
-
+    
     const user_pool_client_native = new cognito.UserPoolClient(
       this,
       "user_pool_client_native",
@@ -109,6 +110,11 @@ export class CdkuserpoolStack extends cdk.Stack {
         oAuth: oauth_settings,
       }
     );
+    
+    const google_idp_dependable = new cdk.ConcreteDependable();
+    google_idp_dependable.add(google_idp);
+    user_pool_client_web.node.addDependency(google_idp_dependable);
+    user_pool_client_native.node.addDependency(google_idp_dependable);
     
     // Cognito Id Pool
 
